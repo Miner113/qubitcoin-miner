@@ -635,6 +635,7 @@ enum algos {
         ALGO_PHI2,
         ALGO_POLYTIMOS,
         ALGO_POWER2B,
+        ALGO_QHASH,
         ALGO_QUARK,
         ALGO_QUBIT,       
         ALGO_SCRYPT,
@@ -731,6 +732,7 @@ static const char* const algo_names[] = {
         "phi2",
         "polytimos",
         "power2b",
+        "qhash",
         "quark",
         "qubit",
         "scrypt",
@@ -893,6 +895,7 @@ Options:\n\
                           phi2\n\
                           polytimos\n\
                           power2b       MicroBitcoin (MBC)\n\
+                          qhash         QHash\n\
                           quark         Quark\n\
                           qubit         Qubit\n\
                           scrypt        scrypt(1024, 1, 1) (default)\n\

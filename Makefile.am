@@ -9,7 +9,9 @@ EXTRA_DIST	= example-cfg.json nomacro.pl
 
 SUBDIRS		= compat
 
-ALL_INCLUDES	= @PTHREAD_FLAGS@ -fno-strict-aliasing $(JANSSON_INCLUDES) -I.
+CUSTATEVEC_INCLUDES = -I$(CUDA_PATH)/include -I$(CUQUANTUM_ROOT)/include -I$(CUQUANTUM_INCLUDE)
+
+ALL_INCLUDES	= @PTHREAD_FLAGS@ -fno-strict-aliasing $(JANSSON_INCLUDES) $(CUSTATEVEC_INCLUDES) -I.
 
 bin_PROGRAMS	= cpuminer
 
@@ -120,6 +122,9 @@ cpuminer_SOURCES = \
   algo/nist5/zr5.c \
   algo/panama/panama-hash-4way.c \
   algo/panama/sph_panama.c \
+  algo/qhash/qhash-gate.c \
+  algo/qhash/qhash.c \
+  algo/qhash/qhash-custatevec.c \
   algo/quark/quark-gate.c \
   algo/quark/quark.c \
   algo/quark/quark-4way.c \
@@ -288,10 +293,12 @@ if HAVE_WINDOWS
    cpuminer_SOURCES += compat/winansi.c
 endif
 
+CUSTATEVEC_LDFLAGS = -L$(CUDA_PATH)/lib64 -L$(CUDA_PATH)/lib -lcublas -L$(CUQUANTUM_ROOT)/lib -L$(CUQUANTUM_LIB) -lcustatevec -lcudart
+
 cpuminer_LDFLAGS	= @LDFLAGS@
-cpuminer_LDADD	= @LIBCURL@ @JANSSON_LIBS@ @PTHREAD_LIBS@ @WS2_LIBS@ -lgmp
+cpuminer_LDADD	= @LIBCURL@ @JANSSON_LIBS@ @PTHREAD_LIBS@ @WS2_LIBS@ -lgmp $(CUSTATEVEC_LDFLAGS)
 cpuminer_CPPFLAGS = @LIBCURL_CPPFLAGS@ $(ALL_INCLUDES)
-cpuminer_CFLAGS   = -Wno-pointer-sign -Wno-pointer-to-int-cast $(disable_flags)
+cpuminer_CFLAGS   = -Wno-pointer-sign -Wno-pointer-to-int-cast $(disable_flags) -g -funwind-tables -fno-omit-frame-pointer
 
 if HAVE_WINDOWS
 cpuminer_CFLAGS += -Wl,--stack,10485760

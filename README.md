@@ -108,6 +108,7 @@ Supported Algorithms
                           phi2          
                           polytimos     Ninja
                           power2b       MicroBitcoin (MBC)
+                          qhash         QHash
                           quark         Quark
                           qubit         Qubit
                           scrypt        scrypt(1024, 1, 1) (default)

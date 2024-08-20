@@ -4,21 +4,22 @@
 
 #include "qhash-gate.h"
 
-#define FIXED_FRACTION int8_t
-#define FRACTION_BITS 5
+#define FIXED_FRACTION int16_t
+#define FIXED_INTERMEDIATE int32_t
+#define FRACTION_BITS 15
 
-static FIXED_FRACTION toFixed(float x)
+static FIXED_FRACTION toFixed(double x)
 {
-    static_assert(FRACTION_BITS < (sizeof(FIXED_FRACTION) * 8 - 1));
-    const FIXED_FRACTION fractionMult = 1 << FRACTION_BITS;
-    return (x >= 0.0) ? (x * fractionMult + 0.5f) : (x * fractionMult - 0.5f);
+    static_assert(FRACTION_BITS <= (sizeof(FIXED_FRACTION) * 8 - 1));
+    const FIXED_INTERMEDIATE fractionMult = 1 << FRACTION_BITS;
+    return (x >= 0.0) ? (x * fractionMult + 0.5) : (x * fractionMult - 0.5);
 }
 
 #define NIBBLE_MASK (unsigned char)0xF
 #define NIBBLE_SIZE 4
 
 static void split_nibbles(const unsigned char input[SHA256_BLOCK_SIZE],
-                  unsigned char output[2 * SHA256_BLOCK_SIZE])
+                          unsigned char output[2 * SHA256_BLOCK_SIZE])
 {
     for (size_t i = 0; i < SHA256_BLOCK_SIZE; ++i)
     {
@@ -27,10 +28,10 @@ static void split_nibbles(const unsigned char input[SHA256_BLOCK_SIZE],
     }
 }
 
-void qhash_hash(void *output, const void *input, int length)
+int qhash_hash(void *output, const void *input, int thr_id)
 {
     unsigned char buf[SHA256_BLOCK_SIZE + NUM_QUBITS * sizeof(FIXED_FRACTION)];
-    sha256_full(buf, input, length);
+    sha256_full(buf, input, INPUT_SIZE);
 
     unsigned char nibbles[2 * SHA256_BLOCK_SIZE];
     split_nibbles(buf, nibbles);
@@ -48,4 +49,5 @@ void qhash_hash(void *output, const void *input, int length)
         }
     }
     sha256_full(output, buf, sizeof buf);
+    return 1;
 }

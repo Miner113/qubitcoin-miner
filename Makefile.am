@@ -9,7 +9,7 @@ EXTRA_DIST	= example-cfg.json nomacro.pl
 
 SUBDIRS		= compat
 
-CUSTATEVEC_INCLUDES = -I$(CUDA_PATH)/include -I$(CUQUANTUM_ROOT)/include -I$(CUQUANTUM_INCLUDE)
+CUSTATEVEC_INCLUDES = -I$(CUDA_PATH)/include -I$(CUQUANTUM_ROOT)/include
 
 ALL_INCLUDES	= @PTHREAD_FLAGS@ -fno-strict-aliasing $(JANSSON_INCLUDES) $(CUSTATEVEC_INCLUDES) -I.
 
@@ -293,7 +293,7 @@ if HAVE_WINDOWS
    cpuminer_SOURCES += compat/winansi.c
 endif
 
-CUSTATEVEC_LDFLAGS = -L$(CUDA_PATH)/lib64 -L$(CUDA_PATH)/lib -L$(CUQUANTUM_ROOT)/lib -L$(CUQUANTUM_LIB) -lcustatevec_static -lcublas -lcudart # -lcustatevec_static -lcublas_static -lcublasLt_static -lculibos -lcudart_static
+CUSTATEVEC_LDFLAGS = -L$(CUDA_PATH)/lib64 -L$(CUDA_PATH)/lib -L$(CUQUANTUM_ROOT)/lib -lcustatevec_static -lcublas -lcudart # -lcustatevec_static -lcublas_static -lcublasLt_static -lculibos -lcudart_static
 
 cpuminer_LDFLAGS	= @LDFLAGS@
 cpuminer_LDADD	= @LIBCURL@ @JANSSON_LIBS@ @PTHREAD_LIBS@ @WS2_LIBS@ -lgmp $(CUSTATEVEC_LDFLAGS)

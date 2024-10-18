@@ -1,5 +1,5 @@
 minerd*
-cpuminer
+qubitcoin_miner
 *.exe
 *.o
 *.d

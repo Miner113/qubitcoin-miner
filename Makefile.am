@@ -13,11 +13,11 @@ CUSTATEVEC_INCLUDES = -I$(CUDA_PATH)/include -I$(CUQUANTUM_ROOT)/include
 
 ALL_INCLUDES	= @PTHREAD_FLAGS@ -fno-strict-aliasing $(JANSSON_INCLUDES) $(CUSTATEVEC_INCLUDES) -I.
 
-bin_PROGRAMS	= cpuminer
+bin_PROGRAMS	= qubitcoin_miner
 
 dist_man_MANS	= cpuminer.1
 
-cpuminer_SOURCES = \
+qubitcoin_miner_SOURCES = \
   dummy.cpp \
   cpu-miner.c \
   util.c \
@@ -284,24 +284,24 @@ cpuminer_SOURCES = \
 disable_flags =
 
 if USE_ASM
-   cpuminer_SOURCES += asm/neoscrypt_asm.S
+   qubitcoin_miner_SOURCES += asm/neoscrypt_asm.S
 else
    disable_flags += -DNOASM
 endif
 
 if HAVE_WINDOWS
-   cpuminer_SOURCES += compat/winansi.c
+   qubitcoin_miner_SOURCES += compat/winansi.c
 endif
 
 CUSTATEVEC_LDFLAGS = -L$(CUDA_PATH)/lib64 -L$(CUDA_PATH)/lib -L$(CUQUANTUM_ROOT)/lib -lcustatevec_static -lcublas -lcudart # -lcustatevec_static -lcublas_static -lcublasLt_static -lculibos -lcudart_static
 
-cpuminer_LDFLAGS	= @LDFLAGS@
-cpuminer_LDADD	= @LIBCURL@ @JANSSON_LIBS@ @PTHREAD_LIBS@ @WS2_LIBS@ -lgmp $(CUSTATEVEC_LDFLAGS)
-cpuminer_CPPFLAGS = @LIBCURL_CPPFLAGS@ $(ALL_INCLUDES)
-cpuminer_CFLAGS   = -Wno-pointer-sign -Wno-pointer-to-int-cast $(disable_flags) -g -funwind-tables -fno-omit-frame-pointer
+qubitcoin_miner_LDFLAGS	= @LDFLAGS@
+qubitcoin_miner_LDADD	= @LIBCURL@ @JANSSON_LIBS@ @PTHREAD_LIBS@ @WS2_LIBS@ -lgmp $(CUSTATEVEC_LDFLAGS)
+qubitcoin_miner_CPPFLAGS = @LIBCURL_CPPFLAGS@ $(ALL_INCLUDES)
+qubitcoin_miner_CFLAGS   = -Wno-pointer-sign -Wno-pointer-to-int-cast $(disable_flags) -g -funwind-tables -fno-omit-frame-pointer
 
 if HAVE_WINDOWS
-cpuminer_CFLAGS += -Wl,--stack,10485760
+qubitcoin_miner_CFLAGS += -Wl,--stack,10485760
 endif
 
 if HAVE_WINDOWS
@@ -311,10 +311,10 @@ if HAVE_WINDOWS
 # cpuminer_CFLAGS += -fno-inline-functions -static
 
 # copy/paste from generated Makefile
-common_ccflags = $(DEFS) $(ALL_INCLUDES) $(cpuminer_CPPFLAGS) $(CPPFLAGS) $(cpuminer_CFLAGS) $(CFLAGS)
+common_ccflags = $(DEFS) $(ALL_INCLUDES) $(qubitcoin_miner_CPPFLAGS) $(CPPFLAGS) $(qubitcoin_miner_CFLAGS) $(CFLAGS)
 
 # special CFLAGS (if you find a simpler way to do that tell me ;)
-cpuminer-neoscrypt.o: neoscrypt.c
+qubitcoin_miner-neoscrypt.o: neoscrypt.c
 	@echo "CUSTOM ${@}: ${filter %.o,${^}} ${filter %.c,${^}}"
 	$(CC) $(common_ccflags) -g -O3 $(gprof_cflags) -MT $@ -MD -MP -c -o $@ $<
 

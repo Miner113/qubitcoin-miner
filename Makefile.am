@@ -13,7 +13,7 @@ CUSTATEVEC_INCLUDES = -I$(CUDA_PATH)/include -I$(CUQUANTUM_ROOT)/include
 
 ALL_INCLUDES	= @PTHREAD_FLAGS@ -fno-strict-aliasing $(JANSSON_INCLUDES) $(CUSTATEVEC_INCLUDES) -I.
 
-bin_PROGRAMS	= qubitcoin_miner
+bin_PROGRAMS	= qubitcoin-miner
 
 dist_man_MANS	= cpuminer.1
 

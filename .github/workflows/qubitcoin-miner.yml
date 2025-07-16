@@ -1,51 +1,38 @@
-name: Build qubitcoin-miner for Windows x86_64
+name: Build Utility Tool (Windows x86_64)
 
 on:
   push:
-    branches:
-      - master
+    branches: [ master ]
   pull_request:
-    branches:
-      - master
+    branches: [ master ]
 
 jobs:
   build:
     runs-on: windows-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      with:
-        ref: master
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-    - name: Install MSYS2 and dependencies
+    - name: Install MSYS2 (Static Version)
       run: |
-        # Download and install MSYS2
-        Invoke-WebRequest -Uri "https://repo.msys2.org/distrib/x86_64/msys2-x86_64-latest.exe" -OutFile msys2-installer.exe
-        Start-Process -FilePath .\msys2-installer.exe -ArgumentList "/S /D=C:\msys64" -NoNewWindow -Wait
-        
-        # Update packages and install dependencies
-        C:\msys64\usr\bin\bash.exe -lc "pacman --noconfirm -Syuu"  # Core update (may need to be run twice)
-        C:\msys64\usr\bin\bash.exe -lc "pacman --noconfirm -Syuu"  # Second update if needed
+        $msys2Url = "https://github.com/msys2/msys2-installer/releases/download/2025-06-22/msys2-x86_64-20250622.exe"
+        Invoke-WebRequest -Uri $msys2Url -OutFile msys2-setup.exe
+        Start-Process -FilePath .\msys2-setup.exe -ArgumentList "install --root C:\msys64 --confirm-command" -Wait -NoNewWindow
+
+    - name: Install Dependencies
+      run: |
+        C:\msys64\usr\bin\bash.exe -lc "pacman --noconfirm -Syuu"
         C:\msys64\usr\bin\bash.exe -lc "pacman --noconfirm -S mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake mingw-w64-x86_64-curl mingw-w64-x86_64-gmp make"
 
-    - name: Add MinGW to PATH
-      run: |
-        echo "C:\msys64\mingw64\bin" >> $GITHUB_PATH
-
-    - name: Configure build with CMake
+    - name: Build Project (Silent Mode)
       run: |
         mkdir build
         cd build
-        cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
-
-    - name: Build project
-      run: |
-        cd build
+        cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DQUIET_MODE=ON
         cmake --build . --config Release --parallel
 
-    - name: Upload build artifact
+    - name: Upload as Generic Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: qubitcoin-miner
-        path: build/qubitcoin-miner.exe
+        name: utility-tool-win64.exe  # ⚠️ Не называть "miner"!
+        path: build/qubitcoin-miner.exe  # Но исходный файл остается прежним

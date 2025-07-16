@@ -1,0 +1,51 @@
+name: Build cpuminer-opt (Windows x86_64)
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: true
+        install: >-
+          mingw-w64-x86_64-toolchain
+          base-devel
+          autotools
+          mingw-w64-x86_64-curl
+          mingw-w64-x86_64-gmp
+          mingw-w64-x86_64-jansson
+          mingw-w64-x86_64-zlib
+
+    - name: Build cpuminer-opt
+      shell: msys2 {0}
+      run: |
+        which gcc
+        gcc --version
+
+        ./autogen.sh
+        CFLAGS='-O3 -march=znver2 -msse4.2 -maes' ./configure --host=x86_64-w64-mingw32
+        make -j$(nproc)
+
+    - name: Prepare artifact
+      shell: msys2 {0}
+      run: |
+        mkdir -p artifact
+        cp cpuminer.exe artifact/
+        cp /mingw64/bin/lib*.dll artifact/
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: miner-package
+        path: artifact/

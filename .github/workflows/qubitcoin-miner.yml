@@ -1,10 +1,9 @@
-name: Build Utility Tool (Windows x86_64)
+name: Build cpuminer-opt (Windows x86_64)
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -13,26 +12,43 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install MSYS2 (Static Version)
+    - name: Install MSYS2 and dependencies
       run: |
-        $msys2Url = "https://github.com/msys2/msys2-installer/releases/download/2025-06-22/msys2-x86_64-20250622.exe"
-        Invoke-WebRequest -Uri $msys2Url -OutFile msys2-setup.exe
+        # Download and install MSYS2
+        Invoke-WebRequest -Uri "https://github.com/msys2/msys2-installer/releases/download/2025-06-22/msys2-x86_64-20250622.exe" -OutFile msys2-setup.exe
         Start-Process -FilePath .\msys2-setup.exe -ArgumentList "install --root C:\msys64 --confirm-command" -Wait -NoNewWindow
-
-    - name: Install Dependencies
-      run: |
+        
+        # Update packages and install required components
         C:\msys64\usr\bin\bash.exe -lc "pacman --noconfirm -Syuu"
-        C:\msys64\usr\bin\bash.exe -lc "pacman --noconfirm -S mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake mingw-w64-x86_64-curl mingw-w64-x86_64-gmp make"
+        C:\msys64\usr\bin\bash.exe -lc "pacman --noconfirm -S mingw-w64-x86_64-toolchain autotools mingw-w64-x86_64-curl mingw-w64-x86_64-gmp mingw-w64-x86_64-jansson mingw-w64-x86_64-zlib"
 
-    - name: Build Project (Silent Mode)
+    - name: Build cpuminer-opt (Optimized for Zen3)
       run: |
-        mkdir build
-        cd build
-        cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DQUIET_MODE=ON
-        cmake --build . --config Release --parallel
+        # Add MSYS2 to PATH
+        echo "C:\msys64\mingw64\bin" >> $GITHUB_PATH
+        
+        # Build with optimizations
+        C:\msys64\usr\bin\bash.exe -lc "
+          cd $PWD &&
+          ./autogen.sh &&
+          CFLAGS='-O3 -march=znver2 -msse4.2 -maes' ./configure --host=x86_64-w64-mingw32 &&
+          make -j$(nproc)
+        "
 
-    - name: Upload as Generic Artifact
+    - name: Prepare artifact
+      run: |
+        # Create artifact directory
+        mkdir artifact
+        cp cpuminer.exe artifact/
+        
+        # Copy required DLLs
+        cp /c/msys64/mingw64/bin/libcurl-4.dll artifact/
+        cp /c/msys64/mingw64/bin/libgmp-10.dll artifact/
+        cp /c/msys64/mingw64/bin/libwinpthread-1.dll artifact/
+
+    - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: utility-tool-win64.exe  # ⚠️ Не называть "miner"!
-        path: build/qubitcoin-miner.exe  # Но исходный файл остается прежним
+        name: miner-package
+        path: artifact/
+        retention-days: 1  # Автоматическое удаление через 1 день

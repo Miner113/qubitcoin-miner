@@ -22,14 +22,18 @@ jobs:
         C:\msys64\usr\bin\bash.exe -lc "pacman --noconfirm -Syuu"
         C:\msys64\usr\bin\bash.exe -lc "pacman --noconfirm -S mingw-w64-x86_64-toolchain autotools mingw-w64-x86_64-curl mingw-w64-x86_64-gmp mingw-w64-x86_64-jansson mingw-w64-x86_64-zlib"
 
-    - name: Build cpuminer-opt (Optimized for Zen3)
+    - name: Build cpuminer-opt
       run: |
-        # Add MSYS2 to PATH
+        # Добавляем MSYS2 в PATH
         echo "C:\msys64\mingw64\bin" >> $GITHUB_PATH
         
-        # Build with optimizations
+        # Конвертируем Windows-путь в UNIX-формат для MSYS2
+        $unixPath = $PWD.Path.Replace('\', '/').Replace('C:', '/c')
+        Write-Output "Converted path: $unixPath"
+        
+        # Запускаем сборку в MSYS2
         C:\msys64\usr\bin\bash.exe -lc "
-          cd $PWD &&
+          cd '$unixPath' &&
           ./autogen.sh &&
           CFLAGS='-O3 -march=znver2 -msse4.2 -maes' ./configure --host=x86_64-w64-mingw32 &&
           make -j$(nproc)
